@@ -27,7 +27,7 @@ mongodb.get_database()
 
 @app.get("/contacts")
 def get_all_contacts():
-    pass
+    return mongodb.select()
 
 @app.post("/contacts")
 def post_new_contact(contact: Contact):
