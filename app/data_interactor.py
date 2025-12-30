@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import os
 from dotenv import load_dotenv
+from bson import ObjectId
 
 load_dotenv()
 
@@ -18,7 +19,7 @@ class MongodbInstance:
         try:
             client = MongoClient(f"mongodb://{HOST}:{PORT}")
             client.admin.command("ping")
-            self.db = client.contacts_db
+            self.db = client[DB]
             self.collection = self.db.contacts
             return "Successfully connected to MongoDB"
         
@@ -29,21 +30,25 @@ class MongodbInstance:
     def select(self, id = None):
         if self.db is None:
             self.get_database()
-        return list(self.collection.find())
+        contact_list = []
+        for doc in self.collection.find():
+            doc['id'] = str(doc['_id'])
+            del doc['_id']
+            contact_list.append(doc)
+        return contact_list
 
     def insert(self, contact):
         contact = contact.to_dict()
         result = self.db.contacts.insert_one(contact)
-        return result.inserted_id
+        return result
+         
+    def update(self, id, query):
+        query_filter = {'_id': ObjectId(id)}
+        result = self.collection.update_one(query_filter, query)
+        return result.modified_count
 
-    def update(collection, identifier):
-        pass
+    def delete(self, id):
+        query_filter = {'_id': ObjectId(id)}
+        result =  self.collection.delete_one(query_filter)
+        return result.deleted_count
 
-    def delete(collection, identifier):
-        pass
-
-
-a = MongodbInstance()
-a.get_database()
-print(a.collection)
-print(a.select())

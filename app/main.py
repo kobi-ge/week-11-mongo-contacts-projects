@@ -7,7 +7,6 @@ import data_interactor as di
 
 
 class Contact(BaseModel):
-    id: int = Field(..., alias= id)
     first_name: str = Field(..., max_length=50)
     last_name: str = Field(..., max_length=50)
     phone_number: str = Field(..., max_length=20)
@@ -31,15 +30,28 @@ def get_all_contacts():
 
 @app.post("/contacts")
 def post_new_contact(contact: Contact):
-    return mongodb.insert(contact)
+    result = mongodb.insert(contact)
+    return{
+            "message": "Contact created successfully",
+            "id": str(result.inserted_id)
+        }
 
-@app.update("/contacts/{id}")
-def update_contact():
-    pass
+@app.put("/contacts/{id}")
+def update_contact(contact: Contact, id):
+    contact = contact.to_dict()
+    query = { '$set': contact } 
+    modified_count = mongodb.update(id, query)   
+    if modified_count > 0:
+        return {"message": "Contact updated successfully"}
+    
+    return {"message": "Contact not found or no changes made"}
 
 @app.delete("/contacts/{id}")
-def delete_contact(id: int):
-    pass
+def delete_contact(id):
+    deleted_count = mongodb.delete(id)
+    if deleted_count > 0:
+        return {"message": "Contact deleted successfully"}
+    return {"message": "Contact not found"}
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000)
