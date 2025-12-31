@@ -19,16 +19,28 @@ class Contact(BaseModel):
                 }
 
 app = FastAPI()
+
+# creating an instance of mongodb connection
 mongodb = di.MongodbInstance()
 mongodb.get_database()
 
 
 @app.get("/contacts")
 def get_all_contacts():
+    """
+    Docstring for get_all_contacts
+    this function uses the select method from MongodbInstance to read from DB
+    """
     return mongodb.select()
 
 @app.post("/contacts")
 def post_new_contact(contact: Contact):
+    """
+    Docstring for post_new_contact
+    
+    :param contact: new contact information
+    :type contact: Contact class (base model)
+    """
     result = mongodb.insert(contact)
     return{
             "message": "Contact created successfully",
@@ -57,5 +69,3 @@ def delete_contact(id):
     except HTTPException as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000)

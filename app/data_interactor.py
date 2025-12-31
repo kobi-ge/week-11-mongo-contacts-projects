@@ -7,10 +7,15 @@ from bson import ObjectId
 load_dotenv()
 
 HOST = os.getenv("MONGO_HOST")
-PORT = int(os.getenv("MONGO_PORT"))
+PORT = os.getenv("MONGO_PORT")
 DB = os.getenv("MONGO_DB")
 
 class MongodbInstance:
+    """
+    Docstring for MongodbInstance:
+    this class creates connection to mongodb,
+    and it has all 4 crud operations
+    """
     def __init__(self):
         self.db =None
         self.collection = None
@@ -49,6 +54,6 @@ class MongodbInstance:
 
     def delete(self, id):
         query_filter = {'_id': ObjectId(id)}
-        result =  self.collection.delete_one(query_filter)
+        result = self.collection.delete_one(query_filter)
         return result.deleted_count
 
