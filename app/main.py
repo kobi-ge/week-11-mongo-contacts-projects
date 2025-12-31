@@ -23,7 +23,6 @@ mongodb = di.MongodbInstance()
 mongodb.get_database()
 
 
-
 @app.get("/contacts")
 def get_all_contacts():
     return mongodb.select()
@@ -38,20 +37,25 @@ def post_new_contact(contact: Contact):
 
 @app.put("/contacts/{id}")
 def update_contact(contact: Contact, id):
-    contact = contact.to_dict()
-    query = { '$set': contact } 
-    modified_count = mongodb.update(id, query)   
-    if modified_count > 0:
-        return {"message": "Contact updated successfully"}
-    
-    return {"message": "Contact not found or no changes made"}
+    try:
+        contact = contact.to_dict()
+        query = { '$set': contact } 
+        modified_count = mongodb.update(id, query)   
+        if modified_count > 0:
+            return {"message": "Contact updated successfully"}        
+        return {"message": "Contact not found or no changes made"}
+    except HTTPException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 @app.delete("/contacts/{id}")
 def delete_contact(id):
-    deleted_count = mongodb.delete(id)
-    if deleted_count > 0:
-        return {"message": "Contact deleted successfully"}
-    return {"message": "Contact not found"}
+    try:
+        deleted_count = mongodb.delete(id)
+        if deleted_count > 0:
+            return {"message": "Contact deleted successfully"}
+        return {"message": "Contact not found"}
+    except HTTPException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000)
